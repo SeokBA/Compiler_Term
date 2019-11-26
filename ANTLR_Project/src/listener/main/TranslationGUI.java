@@ -27,9 +27,10 @@ class TranslationGUI extends JFrame {
     MiniCParser parser;
     ParseTree tree;
     ParseTreeWalker walker;
-    String output;
 
     BytecodeGenListener bytecodeGenListener;
+    JavaGenListener javaGenListener;
+    PythonGenListener pythonGenListener;
 
     Container contentPanel;
 
@@ -42,6 +43,9 @@ class TranslationGUI extends JFrame {
     JLabel lbSelectLang;
 
     JTextArea taFileAddress;
+    JTextArea taConsole;
+
+    JScrollPane scrollConsole;
 
     JComboBox<String> cbSelectLang;
 
@@ -49,13 +53,14 @@ class TranslationGUI extends JFrame {
 
     public static void main(String[] args) {
         new TranslationGUI();
+        System.out.println("TranslationGUI Start\n");
     }
 
     public TranslationGUI() {
         // main
         setTitle("Translation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(250, 250, 400, 250);
+        setBounds(250, 250, 380, 300);
         contentPanel = new JPanel();
         ((JComponent) contentPanel).setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPanel);
@@ -66,30 +71,30 @@ class TranslationGUI extends JFrame {
         pnlSelectFile = new JPanel();
         pnlSelectFile.setLayout(null);
         pnlSelectFile.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Select File", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-        pnlSelectFile.setBounds(20, 20, 340, 170);
+        pnlSelectFile.setBounds(20, 20, 340, 240);
         contentPanel.add(pnlSelectFile);
 
 
         // Button
         btnFileSelect = new JButton("File Select");
-        btnFileSelect.setBounds(40, 120, 120, 25);
+        btnFileSelect.setBounds(40, 100, 120, 25);
         btnFileSelect.addActionListener(setAddressListener);
         pnlSelectFile.add(btnFileSelect);
 
 
         btnTranslate = new JButton("Translate");
-        btnTranslate.setBounds(180, 120, 120, 25);
+        btnTranslate.setBounds(180, 100, 120, 25);
         btnTranslate.addActionListener(setAddressListener);
         pnlSelectFile.add(btnTranslate);
 
 
         // Label
-        lbFileAddress = new JLabel("MiniC File (.c) : ");
+        lbFileAddress = new JLabel("MiniC File : ");
         lbFileAddress.setBounds(40, 30, 120, 25);
         pnlSelectFile.add(lbFileAddress);
 
         lbSelectLang = new JLabel("Language : ");
-        lbSelectLang.setBounds(40, 70, 120, 25);
+        lbSelectLang.setBounds(40, 60, 120, 25);
         pnlSelectFile.add(lbSelectLang);
 
 
@@ -99,10 +104,21 @@ class TranslationGUI extends JFrame {
         taFileAddress.setEnabled(false);
         pnlSelectFile.add(taFileAddress);
 
+        taConsole = new JTextArea();
+        taConsole.setBounds(20, 135, 300, 80);
+        taConsole.setEnabled(false);
+        pnlSelectFile.add(taConsole);
+
+
+        // scroll
+        scrollConsole = new JScrollPane(taConsole);
+        scrollConsole.setBounds(20, 135, 300, 80);
+        pnlSelectFile.add(scrollConsole);
+
 
         // ComboBox
         cbSelectLang = new JComboBox<>(new String[]{"Bytecode", "Java", "Python"});
-        cbSelectLang.setBounds(110, 70, 190, 25);
+        cbSelectLang.setBounds(110, 60, 190, 25);
         pnlSelectFile.add(cbSelectLang);
 
 
@@ -112,7 +128,7 @@ class TranslationGUI extends JFrame {
     class setAddressListener implements ActionListener {
         JFileChooser fileChooser, folderChooser;
         StringTokenizer stringTokenizer;
-        String inputFileName, outputFileName;
+        String inputFileName, outputFileName, outputData;
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -131,6 +147,7 @@ class TranslationGUI extends JFrame {
                 stringTokenizer = new StringTokenizer(outputFileName, ".");
                 outputFileName = stringTokenizer.nextToken();
                 taFileAddress.setText(inputFileName);
+                setConsole("Source File Path : "+ inputFileName);
             }
 
             if (e.getSource() == btnTranslate) {
@@ -153,18 +170,41 @@ class TranslationGUI extends JFrame {
                 switch (cbSelectLang.getSelectedIndex()) {
                     case 0:
                         bytecodeGenListener = new BytecodeGenListener();
-                        walker.walk(bytecodeGenListener, tree);
-                        output = bytecodeGenListener.getTexts();
+                        bytecodeGenListener.setGUI(this);
+                        try {
+                            walker.walk(bytecodeGenListener, tree);
+                            setConsole("\nTranslate Complete (MiniC -> Bytecode)");
+                        }
+                        catch (Exception err) {
+                            setConsole("Translation Error");
+                        }
                         break;
                     case 1:
+                        javaGenListener = new JavaGenListener();
+                        javaGenListener.setGUI(this);
+                        try {
+                            walker.walk(javaGenListener, tree);
+                            setConsole("\nTranslate Complete (MiniC -> Java)");
+                        }
+                        catch (Exception err) {
+                            setConsole("\nTranslation Error");
+                        }
                         break;
                     case 2:
+                        pythonGenListener = new PythonGenListener();
+                        pythonGenListener.setGUI(this);
+                        try {
+                            walker.walk(pythonGenListener, tree);
+                            setConsole("Translate Complete (MiniC -> Python)");
+                        }
+                        catch (Exception err) {
+                            setConsole("Translation Error");
+                        }
                         break;
                     default:
                         break;
                 }
 
-                // todo: 변환된 파일 저장, 생성자에서 저장 위치를 받아 exitProgram() 에서 newTest.get(ctx)를 파일로 저장하게 함
                 folderChooser = new JFileChooser();
                 folderChooser.setDialogTitle("저장할 폴더 선택");
                 folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -175,16 +215,22 @@ class TranslationGUI extends JFrame {
                     return;
                 }
                 String saveFileName = folderChooser.getSelectedFile().getPath() + "/" + outputFileName + ".j";
-                System.out.println(saveFileName);
+                setConsole("Save Path : "+ saveFileName);
                 try {
                     OutputStream outputStream = new FileOutputStream(saveFileName);
-                    byte[] by = output.getBytes();
+                    byte[] by = outputData.getBytes();
                     outputStream.write(by);
-                    System.out.println("Complete");
+                    setConsole("Save Complete");
                 } catch (IOException ex) {
+                    setConsole("Save Error");
                     ex.printStackTrace();
                 }
             }
         }
+    }
+
+    public void setConsole(String str){
+        System.out.println(str);
+        taConsole.setText(taConsole.getText() + str + "\n\n");
     }
 }

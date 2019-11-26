@@ -109,9 +109,9 @@ public class BytecodeGenListenerHelper {
 				".super java/lang/Object\n" +
 				"; standard initializer\n" +
 				".method public <init>()V\n" +
-				"aload_0\n" +
-				"invokenonvirtual java/lang/Object/<init>()V\n" +
-				"return\n" +
+				"\taload_0\n" +
+				"\tinvokenonvirtual java/lang/Object/<init>()V\n" +
+				"\treturn\n" +
 				".end method\n";
 	}
 

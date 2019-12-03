@@ -270,10 +270,14 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
 
     @Override
     public void exitFun_decl(MiniCParser.Fun_declContext ctx) {
-        String type = newTexts.get(ctx.type_spec());
         String ident = ctx.getChild(1).getText();
-        String par = newTexts.get(ctx.params());
         String compound = newTexts.get(ctx.compound_stmt());
+        if(ident.equals("main")) {
+            newTexts.put(ctx, "public static void main(String[] args)\n"+ compound);
+            return;
+        }
+        String type = newTexts.get(ctx.type_spec());
+        String par = newTexts.get(ctx.params());
         newTexts.put(ctx, type + ident + "(" + par + ")\n" + compound);//함수 꼴 만들어 newTexts에 넣어주기
     }
 
@@ -287,18 +291,12 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String s0 = null, s2 = null, op = null;
         if(ctx.getChildCount() == 4){//IDENT '[' expr ']' 과 IDENT '(' args ')'	처리하기
             String fname=ctx.getChild(0).getText();
-            if (fname.equals("_print")) {
-                fname="System.out.println";
-                String exp2=ctx.getChild(1).getText();
-                String exp3= newTexts.get(ctx.getChild(2));//처리된  expr 결과 가져오기
-                String exp4= ctx.getChild(3).getText();
-                newTexts.put(ctx, fname+exp2+exp3+exp4);
-                return;
-            }
-            String exp1= ctx.getChild(0).getText();
             String exp2=ctx.getChild(1).getText();
             String exp3= newTexts.get(ctx.getChild(2));//처리된  expr 결과 가져오기
             String exp4= ctx.getChild(3).getText();
+            if (fname.equals("_print")) {
+                fname="System.out.println";
+            }
             newTexts.put(ctx, fname+exp2+exp3+exp4);
             return;
         }

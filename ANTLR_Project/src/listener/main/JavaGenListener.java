@@ -278,7 +278,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         }
         String type = newTexts.get(ctx.type_spec());
         String par = newTexts.get(ctx.params());
-        newTexts.put(ctx, type + ident + "(" + par + ")\n" + compound);//함수 꼴 만들어 newTexts에 넣어주기
+        newTexts.put(ctx, "public static "+type + ident + "(" + par + ")\n" + compound);//메인 함수에 넣으려면 static있어야 함
     }
 
     @Override

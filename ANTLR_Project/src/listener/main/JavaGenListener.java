@@ -8,7 +8,6 @@ import static listener.main.BytecodeGenListenerHelper.getFunName;
 
 public class JavaGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
-    //JavaSymbolTable symbolTable = new JavaSymbolTable();
     TranslationGUI.setAddressListener setAddressListener;
 
 
@@ -17,7 +16,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     }
 
     @Override
-    public void exitProgram(MiniCParser.ProgramContext ctx) {//replaceAll("\n", "\n    ");
+    public void exitProgram(MiniCParser.ProgramContext ctx) {
         int size = ctx.getChildCount();
         String programStr="public class TestJava {";
         programStr+="\n"+newTexts.get(ctx.decl(0));

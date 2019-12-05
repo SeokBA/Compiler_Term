@@ -26,8 +26,8 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
                 programStr+="\n"+newTexts.get(ctx.decl(i))+"\n";
             }
         }
-        programStr+="\n}";
         programStr=programStr.replaceAll("\n", "\n    ");
+        programStr+="\n}";
         System.out.println(programStr);
         if (setAddressListener != null)
             setAddressListener.outputData = programStr;
@@ -252,13 +252,9 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     }
 
     @Override
-    public void enterReturn_stmt(MiniCParser.Return_stmtContext ctx) {
-    }
-
-    @Override
     public void exitReturn_stmt(MiniCParser.Return_stmtContext ctx) {
         int size = ctx.getChildCount();
-        if (size == 1) {//자식 갯수로 유형 판별
+        if (size == 2) {//자식 갯수로 유형 판별
             newTexts.put(ctx, ctx.RETURN() + ";");
         } else {
             newTexts.put(ctx, ctx.RETURN() + " " + newTexts.get(ctx.expr()) + ";");

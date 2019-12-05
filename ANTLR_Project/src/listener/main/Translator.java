@@ -61,8 +61,8 @@ public class Translator {
                 break;
             case PYTHON:
                 walker.walk(new PythonGenListener(), tree);
-            case JAVA:
-                walker.walk(new JavaGenListener(), tree);
+//            case JAVA:
+//                walker.walk(new JavaGenListener(), tree);
             default:
                 break;
         }

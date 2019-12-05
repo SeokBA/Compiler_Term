@@ -8,7 +8,6 @@ import static listener.main.BytecodeGenListenerHelper.getFunName;
 
 public class JavaGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
-    //JavaSymbolTable symbolTable = new JavaSymbolTable();
     TranslationGUI.setAddressListener setAddressListener;
 
 
@@ -19,13 +18,15 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     @Override
     public void exitProgram(MiniCParser.ProgramContext ctx) {
         int size = ctx.getChildCount();
-        String programStr="";
-        programStr+=newTexts.get(ctx.decl(0))+"\n";
+        String programStr="public class TestJava {";
+        programStr+="\n"+newTexts.get(ctx.decl(0));
         if (size > 1) {
             for (int i = 1; i < size; i++) {//pretty print된 결과물을 newTexts에 가져와 출력
-                programStr+=newTexts.get(ctx.decl(i))+"\n";
+                programStr+="\n"+newTexts.get(ctx.decl(i));
             }
         }
+        programStr=programStr.replaceAll("\n", "\n    ");
+        programStr+="\n}";
         System.out.println(programStr);
         if (setAddressListener != null)
             setAddressListener.outputData = programStr;
@@ -87,7 +88,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             newTexts.put(ctx, type + ident + " = " + literal + ";");
         } else if (op.equals("[")) {
             String literal = ctx.getChild(3).getText();
-            newTexts.put(ctx, type + ident + "[" + literal + "];");
+            newTexts.put(ctx, type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
         } else {
             newTexts.put(ctx, type + ident + ";");
         }
@@ -215,7 +216,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             if (op.equals("=")) { // type_spec IDENT = LITERAL;형식으로 만들어줌
                 newTexts.put(ctx, type + ident + " = " + ctx.getChild(3).getText() + ";");
             } else {// type_spec IDENT [LITERAL];
-                newTexts.put(ctx, type + ident + "[" + ctx.getChild(3).getText() + "];");
+                newTexts.put(ctx, type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
             }
         }
     }
@@ -250,13 +251,9 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     }
 
     @Override
-    public void enterReturn_stmt(MiniCParser.Return_stmtContext ctx) {
-    }
-
-    @Override
     public void exitReturn_stmt(MiniCParser.Return_stmtContext ctx) {
         int size = ctx.getChildCount();
-        if (size == 1) {//자식 갯수로 유형 판별
+        if (size == 2) {//자식 갯수로 유형 판별
             newTexts.put(ctx, ctx.RETURN() + ";");
         } else {
             newTexts.put(ctx, ctx.RETURN() + " " + newTexts.get(ctx.expr()) + ";");

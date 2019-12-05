@@ -15,6 +15,7 @@ public class Translator {
 
     private static OPTIONS getOption(String[] args) {
         if (args.length < 1)
+//            return OPTIONS.JAVA;
             return OPTIONS.PYTHON;
 //			return OPTIONS.BYTECODEGEN;
 
@@ -41,7 +42,7 @@ public class Translator {
     }
 
     public static void main(String[] args) throws Exception {
-        CharStream codeCharStream = CharStreams.fromFileName("test.c");
+        CharStream codeCharStream = CharStreams.fromFileName("/Users/min-yungi/Desktop/Git/Compiler_Term/ANTLR_Project/test.c");
         MiniCLexer lexer = new MiniCLexer(codeCharStream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MiniCParser parser = new MiniCParser(tokens);

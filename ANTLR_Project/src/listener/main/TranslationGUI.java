@@ -128,7 +128,7 @@ class TranslationGUI extends JFrame {
     class setAddressListener implements ActionListener {
         JFileChooser fileChooser, folderChooser;
         StringTokenizer stringTokenizer;
-        String inputFileName, outputFileName, outputData;
+        String inputFileName, outputFileName, outputData, extension;
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -142,16 +142,16 @@ class TranslationGUI extends JFrame {
                 }
                 inputFileName = fileChooser.getSelectedFile().getPath();
                 stringTokenizer = new StringTokenizer(inputFileName, "/");
-                while(stringTokenizer.hasMoreTokens())
+                while (stringTokenizer.hasMoreTokens())
                     outputFileName = stringTokenizer.nextToken();
                 stringTokenizer = new StringTokenizer(outputFileName, ".");
                 outputFileName = stringTokenizer.nextToken();
                 taFileAddress.setText(inputFileName);
-                setConsole("Source File Path : "+ inputFileName);
+                setConsole("Source File Path : " + inputFileName);
             }
 
             if (e.getSource() == btnTranslate) {
-                if (taFileAddress.getText().equals("  Destination Address")){
+                if (taFileAddress.getText().equals("  Destination Address")) {
                     JOptionPane.showMessageDialog(null, "MiniC 파일을 선택하지 않았습니다.", "경고", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -174,8 +174,8 @@ class TranslationGUI extends JFrame {
                         try {
                             walker.walk(bytecodeGenListener, tree);
                             setConsole("\nTranslate Complete (MiniC -> Bytecode)");
-                        }
-                        catch (Exception err) {
+                            extension = ".j";
+                        } catch (Exception err) {
                             setConsole("Translation Error");
                         }
                         break;
@@ -185,8 +185,8 @@ class TranslationGUI extends JFrame {
                         try {
                             walker.walk(javaGenListener, tree);
                             setConsole("\nTranslate Complete (MiniC -> Java)");
-                        }
-                        catch (Exception err) {
+                            extension = ".java";
+                        } catch (Exception err) {
                             setConsole("\nTranslation Error");
                         }
                         break;
@@ -196,8 +196,8 @@ class TranslationGUI extends JFrame {
                         try {
                             walker.walk(pythonGenListener, tree);
                             setConsole("Translate Complete (MiniC -> Python)");
-                        }
-                        catch (Exception err) {
+                            extension = ".py";
+                        } catch (Exception err) {
                             setConsole("Translation Error");
                         }
                         break;
@@ -214,8 +214,8 @@ class TranslationGUI extends JFrame {
                     JOptionPane.showMessageDialog(null, "폴더를 선택하지 않았습니다.", "경고", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                String saveFileName = folderChooser.getSelectedFile().getPath() + "/" + outputFileName + ".j";
-                setConsole("Save Path : "+ saveFileName);
+                String saveFileName = folderChooser.getSelectedFile().getPath() + "/" + outputFileName + extension;
+                setConsole("Save Path : " + saveFileName);
                 try {
                     OutputStream outputStream = new FileOutputStream(saveFileName);
                     byte[] by = outputData.getBytes();
@@ -229,7 +229,7 @@ class TranslationGUI extends JFrame {
         }
     }
 
-    public void setConsole(String str){
+    public void setConsole(String str) {
         System.out.println(str);
         taConsole.setText(taConsole.getText() + str + "\n\n");
     }

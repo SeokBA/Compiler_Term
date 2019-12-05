@@ -43,7 +43,12 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         StringBuilder stringBuilder = new StringBuilder();
         if (ctx.getChildCount() == 3) {
 //            stringBuilder.append(newTexts.get(ctx.type_spec()));
-            stringBuilder.append(ctx.IDENT().getText());
+            if (newTexts.get(ctx.type_spec()).equals("int")) {
+                stringBuilder.append(ctx.IDENT().getText());
+                stringBuilder.append(" = 0");
+            } else {
+                stringBuilder.append(ctx.IDENT().getText());
+            }
         } else if (ctx.getChildCount() == 5) {
 //            stringBuilder.append(newTexts.get(ctx.type_spec()));
             stringBuilder.append(ctx.IDENT().getText());
@@ -52,9 +57,9 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         } else {
 //            stringBuilder.append(newTexts.get(ctx.type_spec()));
             stringBuilder.append(ctx.IDENT().getText());
-            stringBuilder.append("[");
+            stringBuilder.append(" = ");
+            stringBuilder.append("[0] * ");
             stringBuilder.append(ctx.LITERAL().getText());
-            stringBuilder.append("]");
         }
         stringBuilder.append("\n");
         newTexts.put(ctx, stringBuilder.toString());
@@ -76,7 +81,7 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     public void exitFun_decl(MiniCParser.Fun_declContext ctx) {
         StringBuilder stringBuilder = new StringBuilder();
         if (ctx.IDENT().getText().equals("main")) {
-            stringBuilder.append("if __name__ == '__main__':");
+            stringBuilder.append("\nif __name__ == '__main__':");
         } else {
             stringBuilder.append("def ");
 //            stringBuilder.append(newTexts.get(ctx.type_spec()));
@@ -205,9 +210,9 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         } else {
 //            stringBuilder.append(newTexts.get(ctx.type_spec()));
             stringBuilder.append(ctx.IDENT().getText());
-            stringBuilder.append("[");
+            stringBuilder.append(" = ");
+            stringBuilder.append("[0] * ");
             stringBuilder.append(ctx.LITERAL().getText());
-            stringBuilder.append("]");
         }
         stringBuilder.append("\n");
         newTexts.put(ctx, stringBuilder.toString());
@@ -322,7 +327,7 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 }
             }
         } else if (ctx.getChildCount() == 4) {// 자식 노드가 네 개일 때.
-            if (ctx.getChild(2) == ctx.expr()) {
+            if (ctx.getChild(1).getText().equals("[")) {
                 newTexts.put(ctx, ctx.IDENT().getText() + "[" + newTexts.get(ctx.expr(0)) + "]");
             } else {
                 String t = ctx.IDENT().getText();
@@ -332,21 +337,21 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 newTexts.put(ctx, t + "(" + newTexts.get(ctx.args()) + ")");
             }
         } else if (ctx.getChildCount() == 6) {// 자식 노드가 여섯 개일 때.
-            newTexts.put(ctx, ctx.IDENT().getText() + " " + "[" + newTexts.get(ctx.expr(0)) + "]" + " " + "=" + " " + newTexts.get(ctx.expr(1)));
+            newTexts.put(ctx, ctx.IDENT().getText() + "[" + newTexts.get(ctx.expr(0)) + "]" + " = " + newTexts.get(ctx.expr(1)));
         }
     }
 
     //    args	: expr (',' expr)*
 //            |					 ;
     @Override
-    public void exitArgs(MiniCParser.ArgsContext ctx) {
+    public void exitArgs(MiniCParser.ArgsContext ctx) { // arguments in function call
         StringBuilder stringBuilder = new StringBuilder();
         if (ctx.getChild(0) == null) {
             newTexts.put(ctx, "");
         } else {
             stringBuilder.append(newTexts.get(ctx.expr(0)));
             for (int i = 1; i < ctx.expr().size(); i++) {
-                stringBuilder.append(",");
+                stringBuilder.append(", ");
                 stringBuilder.append(newTexts.get(ctx.expr(i)));
             }
             newTexts.put(ctx, stringBuilder.toString());

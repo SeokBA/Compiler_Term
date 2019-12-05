@@ -17,15 +17,17 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     }
 
     @Override
-    public void exitProgram(MiniCParser.ProgramContext ctx) {
+    public void exitProgram(MiniCParser.ProgramContext ctx) {//replaceAll("\n", "\n    ");
         int size = ctx.getChildCount();
-        String programStr="";
-        programStr+=newTexts.get(ctx.decl(0))+"\n";
+        String programStr="public class TestJava {\n";
+        programStr+="\n"+newTexts.get(ctx.decl(0))+"\n";
         if (size > 1) {
             for (int i = 1; i < size; i++) {//pretty print된 결과물을 newTexts에 가져와 출력
-                programStr+=newTexts.get(ctx.decl(i))+"\n";
+                programStr+="\n"+newTexts.get(ctx.decl(i))+"\n";
             }
         }
+        programStr+="\n}";
+        programStr=programStr.replaceAll("\n", "\n    ");
         System.out.println(programStr);
         if (setAddressListener != null)
             setAddressListener.outputData = programStr;

@@ -4,11 +4,15 @@ import generated.MiniCBaseListener;
 import generated.MiniCParser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import static listener.main.PythonGenListenerHelper.*;
+import static listener.main.PythonSymbolTable.Type;
+
 
 public class PythonGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
     SymbolTable symbolTable = new SymbolTable();
     TranslationGUI.setAddressListener setAddressListener;
+    PythonSymbolTable pythonSymbolTable = new PythonSymbolTable();
 
     public void setGUI(TranslationGUI.setAddressListener setAddressListener) {
         this.setAddressListener = setAddressListener;
@@ -38,7 +42,13 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     //    var_decl	:  type_spec IDENT ';'
 //            | type_spec IDENT '=' LITERAL ';'
 //            | type_spec IDENT '[' LITERAL ']' ';'	;
-    @Override
+
+    public void enterVar_decl(MiniCParser.Var_declContext ctx) {
+
+    }
+
+
+        @Override
     public void exitVar_decl(MiniCParser.Var_declContext ctx) {
         StringBuilder stringBuilder = new StringBuilder();
         if (ctx.getChildCount() == 3) {

@@ -184,6 +184,7 @@ public class TranslationGUI extends JFrame {
                             extension = ".j";
                         } catch (Exception err) {
                             setConsole("Translation Error");
+                            return;
                         }
                         break;
                     case 1:
@@ -195,6 +196,7 @@ public class TranslationGUI extends JFrame {
                             extension = ".java";
                         } catch (Exception err) {
                             setConsole("\nTranslation Error");
+                            return;
                         }
                         break;
                     case 2:
@@ -206,6 +208,7 @@ public class TranslationGUI extends JFrame {
                             extension = ".py";
                         } catch (Exception err) {
                             setConsole("Translation Error");
+                            return;
                         }
                         break;
                     default:

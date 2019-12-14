@@ -83,7 +83,13 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     public void exitVar_decl(MiniCParser.Var_declContext ctx) {//유형에 따라 다른 결과값을 가지고 newTexts에 put함
         String type = newTexts.get(ctx.type_spec());//앞에서 변형한 type_spec()을 newTexts에서 가져옴
         if(type.equals("void ")){
-            type="int ";
+            System.out.println("void 타입 전역변수는 올 수 없습니다.");
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
+
         }
         String ident = ctx.getChild(1).getText();
         String op = ctx.getChild(2).getText();//자식에서 text를 직접 가져옴
@@ -150,7 +156,12 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         } else {
             String type = ctx.type_spec().getText();
             if(type.equals("void")){
-                type="int";//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
+                try {
+                    throw new Exception();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
+                System.out.println("void 타입 매개 변수는 올 수 없습니다.");
             }
             String id = ctx.IDENT().getText();
             newTexts.put(ctx, type + " " + id);// type_spec IDENT
@@ -218,7 +229,12 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     public void exitLocal_decl(MiniCParser.Local_declContext ctx) {
         String type = newTexts.get(ctx.type_spec());
         if(type.equals("void ")){
-            type="int ";//지역 변수가 타입이 void인 경우는 존재하지 않음
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
+            System.out.println("void 타입 지역변수는 올 수 없습니다.");
         }
         String ident = ctx.getChild(1).getText();
         if (ctx.getChildCount() < 4) {
@@ -302,8 +318,10 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String s0 = null, s2 = null, op = null;
         if(ctx.getChildCount() == 4){//IDENT '[' expr ']' 과 IDENT '(' args ')'	처리하기
             String fname=ctx.getChild(0).getText();
-            if(symbolTable.getFunSpecStr(fname) == null){
+            if(symbolTable.getFunSpecStr(fname) == null && !fname.equals("_print")){
+
                 try {
+                    System.out.println("선언되지 않은 함수입니다.");
                     throw new Exception();
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -3,7 +3,7 @@ package listener.main.bytecode;
 import generated.MiniCBaseListener;
 import generated.MiniCParser;
 import generated.MiniCParser.ParamsContext;
-import listener.main.TranslationGUI;
+import listener.main.gui.TranslationGUI;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 

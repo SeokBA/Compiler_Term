@@ -1,4 +1,4 @@
-package listener.main;
+package listener.main.gui;
 
 import generated.MiniCLexer;
 import generated.MiniCParser;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.StringTokenizer;
 
-class TranslationGUI extends JFrame {
+public class TranslationGUI extends JFrame {
     CharStream codeCharStream;
     MiniCLexer lexer;
     CommonTokenStream tokens;
@@ -128,10 +128,13 @@ class TranslationGUI extends JFrame {
         setVisible(true);
     }
 
-    class setAddressListener implements ActionListener {
+    public class setAddressListener implements ActionListener {
         JFileChooser fileChooser, folderChooser;
         StringTokenizer stringTokenizer;
-        String inputFileName, outputFileName, outputData, extension;
+        String inputFileName;
+        String outputFileName;
+        public String outputData;
+        String extension;
 
         @Override
         public void actionPerformed(ActionEvent e) {

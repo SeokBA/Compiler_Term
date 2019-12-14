@@ -1,10 +1,10 @@
-package listener.main;
+package listener.main.java;
 
 import generated.MiniCBaseListener;
 import generated.MiniCParser;
+import listener.main.gui.TranslationGUI;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import static listener.main.BytecodeGenListenerHelper.getFunName;
 
 public class JavaGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();

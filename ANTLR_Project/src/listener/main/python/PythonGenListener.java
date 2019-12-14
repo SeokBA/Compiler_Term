@@ -1,13 +1,14 @@
-package listener.main;
+package listener.main.python;
 
 import generated.MiniCBaseListener;
 import generated.MiniCParser;
 import generated.MiniCParser.ParamsContext;
+import listener.main.gui.TranslationGUI;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 
-import static listener.main.PythonGenListenerHelper.*;
-import static listener.main.PythonSymbolTable.Type;
+import static listener.main.python.PythonGenListenerHelper.*;
+import static listener.main.python.PythonSymbolTable.Type;
 
 
 public class PythonGenListener extends MiniCBaseListener implements ParseTreeListener {

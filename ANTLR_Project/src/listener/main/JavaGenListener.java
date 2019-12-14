@@ -8,7 +8,7 @@ import static listener.main.BytecodeGenListenerHelper.getFunName;
 
 public class JavaGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
-    //JavaSymbolTable symbolTable = new JavaSymbolTable();
+    JavaSymbolTable symbolTable = new JavaSymbolTable();
     TranslationGUI.setAddressListener setAddressListener;
 
 
@@ -275,6 +275,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
 
     @Override
     public void enterFun_decl(MiniCParser.Fun_declContext ctx) {
+        symbolTable.putFunSpecStr(ctx);
         newTexts.put(ctx, ctx.getText());
     }
 
@@ -301,6 +302,13 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String s0 = null, s2 = null, op = null;
         if(ctx.getChildCount() == 4){//IDENT '[' expr ']' 과 IDENT '(' args ')'	처리하기
             String fname=ctx.getChild(0).getText();
+            if(symbolTable.getFunSpecStr(fname) == null){
+                try {
+                    throw new Exception();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             String exp2=ctx.getChild(1).getText();
             String exp3= newTexts.get(ctx.getChild(2));//처리된  expr 결과 가져오기
             String exp4= ctx.getChild(3).getText();

@@ -1,4 +1,4 @@
-package listener.main;
+package listener.main.bytecode;
 
 import generated.MiniCParser;
 import generated.MiniCParser.Fun_declContext;
@@ -8,10 +8,10 @@ import generated.MiniCParser.Var_declContext;
 import java.util.HashMap;
 import java.util.Map;
 
-import static listener.main.BytecodeGenListenerHelper.getFunName;
+import static listener.main.bytecode.BytecodeGenListenerHelper.getFunName;
 
 
-public class SymbolTable {
+public class BytecodeSymbolTable {
 	enum Type {
 		INT, INTARRAY, VOID, ERROR
 	}
@@ -37,6 +37,28 @@ public class SymbolTable {
 		public String sigStr;
 	}
 
+	// add
+	static public class ArrInfo extends VarInfo{
+		VarInfo[] varArr;
+		int size;
+
+		public ArrInfo(Type type, int id, int size) {
+			super(type, id);
+			VarInfo[] varArr = new VarInfo[size];
+			for(int i = 0; i < size; i++)
+				varArr[i] = new VarInfo(type, id);
+		}
+
+		public void idxAssignment(int index, VarInfo var){
+			varArr[index].initVal = var.initVal;
+		}
+
+		public void idxAssignment(int index, int initVal){
+			varArr[index].initVal = initVal;
+		}
+	}
+	// add End
+
 	private Map<String, VarInfo> _lsymtable = new HashMap<>();	// local v.
 	private Map<String, VarInfo> _gsymtable = new HashMap<>();	// global v.
 	private Map<String, FInfo> _fsymtable = new HashMap<>();	// function
@@ -47,7 +69,7 @@ public class SymbolTable {
 	private int _labelID = 0;
 	private int _tempVarID = 0;
 
-	SymbolTable(){
+	BytecodeSymbolTable(){
 		initFunDecl();
 		initFunTable();
 	}
@@ -67,6 +89,11 @@ public class SymbolTable {
 	void putGlobalVar(String varname, Type type){
 		//<Fill here>
 		_gsymtable.put(varname, new VarInfo(type, _globalVarID++));
+	}
+
+	void putGlobalArr(String varname, Type type, int size){
+		//<Fill here>
+		_gsymtable.put(varname, new ArrInfo(type, _globalVarID++, size));
 	}
 
 	void putLocalVarWithInitVal(String varname, Type type, int initVar){

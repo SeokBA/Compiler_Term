@@ -135,6 +135,7 @@ public class TranslationGUI extends JFrame {
         String outputFileName;
         public String outputData;
         String extension;
+        boolean exception = false;
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -211,6 +212,11 @@ public class TranslationGUI extends JFrame {
                         break;
                 }
 
+                if(exception){ // walker 실행 중 오류가 있었을 시,
+                    setConsole(outputData);
+                    return;
+                }
+
                 folderChooser = new JFileChooser();
                 folderChooser.setDialogTitle("저장할 폴더 선택");
                 folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -232,6 +238,10 @@ public class TranslationGUI extends JFrame {
                     ex.printStackTrace();
                 }
             }
+        }
+
+        public void setException(){
+            exception = true;
         }
     }
 

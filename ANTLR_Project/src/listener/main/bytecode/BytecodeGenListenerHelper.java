@@ -88,6 +88,11 @@ public class BytecodeGenListenerHelper {
         return typeText;
     }
 
+    static String getGlobalVarName(Var_declContext var_decl) {
+        // <Fill in>
+        return var_decl.IDENT().toString();
+    }
+
     static String getLocalVarName(Local_declContext local_decl) {
         // <Fill in>
         return local_decl.IDENT().toString();

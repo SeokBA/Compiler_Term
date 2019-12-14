@@ -54,9 +54,15 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         String varName = ctx.IDENT().getText();
 
         if (pythonSymbolTable.hasGlobalName(varName)) {
-            setAddressListener.setException();
+            if (setAddressListener != null)
+                setAddressListener.setException();
             System.out.println(varName + " : 이미 정의된 변수입니다.");
             errorDump.append(varName + " : 이미 정의된 변수입니다.\n");
+        } else if (pythonSymbolTable.hasFunName(varName)) {
+            if (setAddressListener != null)
+                setAddressListener.setException();
+            System.out.println(varName + " : 다른 형식의 선언에 사용된 이름입니다.");
+            errorDump.append(varName + " : 다른 형식의 선언에 사용된 이름입니다.\n");
         }
 
 
@@ -115,10 +121,16 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         String funcName = getFunName(ctx);
 
         if (pythonSymbolTable.hasFunName(funcName)) {
-            setAddressListener.setException();
+            if (setAddressListener != null)
+                setAddressListener.setException();
 
             System.out.println(funcName + " : 이미 정의된 함수입니다.");
             errorDump.append(funcName + " : 이미 정의된 함수입니다.\n");
+        } else if (pythonSymbolTable.hasGlobalName(funcName) || pythonSymbolTable.hasLocalName(funcName)) {
+            if (setAddressListener != null)
+                setAddressListener.setException();
+            System.out.println(funcName + " : 다른 형식의 선언에 사용된 이름입니다.");
+            errorDump.append(funcName + " : 다른 형식의 선언에 사용된 이름입니다.\n");
         }
 
         ParamsContext params;
@@ -249,10 +261,16 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     @Override
     public void enterLocal_decl(MiniCParser.Local_declContext ctx) {
         String varName = getLocalVarName(ctx);
-        if (pythonSymbolTable.hasLocalName(varName)) {
-            setAddressListener.setException();
+        if (pythonSymbolTable.hasLocalName(varName) || pythonSymbolTable.hasGlobalName(varName)) {
+            if (setAddressListener != null)
+                setAddressListener.setException();
             System.out.println(varName + " : 이미 정의된 변수입니다.");
             errorDump.append(varName + " : 이미 정의된 변수입니다.\n");
+        } else if (pythonSymbolTable.hasFunName(varName)) {
+            if (setAddressListener != null)
+                setAddressListener.setException();
+            System.out.println(varName + " : 다른 형식의 선언에 사용된 이름입니다.");
+            errorDump.append(varName + " : 다른 형식의 선언에 사용된 이름입니다.\n");
         }
 
 
@@ -346,9 +364,15 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 //
                 String vname = ctx.IDENT().getText();
                 if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname))) {
-                    setAddressListener.setException();
+                    if (setAddressListener != null)
+                        setAddressListener.setException();
                     System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
                     errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다.\n");
+                } else if (pythonSymbolTable.hasFunName(vname)) {
+                    if (setAddressListener != null)
+                        setAddressListener.setException();
+                    System.out.println(vname + " : 잘못된 타입 접근입니다.");
+                    errorDump.append(vname + " : 잘못된 타입 접근입니다.\n");
                 }
                 //
                 newTexts.put(ctx, vname);
@@ -381,9 +405,15 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 if (ctx.getChild(0) == ctx.IDENT()) {
                     String vname = ctx.IDENT().getText();
                     if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname))) {
-                        setAddressListener.setException();
+                        if (setAddressListener != null)
+                            setAddressListener.setException();
                         System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
                         errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                    } else if (pythonSymbolTable.hasFunName(vname)) {
+                        if (setAddressListener != null)
+                            setAddressListener.setException();
+                        System.out.println(vname + " : 잘못된 타입 접근입니다.");
+                        errorDump.append(vname + " : 잘못된 타입 접근입니다.\n");
                     }
                     newTexts.put(ctx, ctx.IDENT().getText() + " = " + newTexts.get(ctx.expr(0)));
                 } else {
@@ -420,17 +450,29 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             if (ctx.getChild(1).getText().equals("[")) {
                 String arrName = ctx.IDENT().getText();
                 if (!(pythonSymbolTable.hasGlobalName(arrName) || pythonSymbolTable.hasLocalName(arrName))) {
-                    setAddressListener.setException();
+                    if (setAddressListener != null)
+                        setAddressListener.setException();
                     System.out.println(arrName + " : 정의되지 않은 배열이 호출되었습니다.");
                     errorDump.append(arrName + " : 정의되지 않은 배열 호출되었습니다.\n");
+                } else if (pythonSymbolTable.hasFunName(arrName)) {
+                    if (setAddressListener != null)
+                        setAddressListener.setException();
+                    System.out.println(arrName + " : 잘못된 타입 접근입니다.");
+                    errorDump.append(arrName + " : 잘못된 타입 접근입니다.\n");
                 }
                 newTexts.put(ctx, arrName + "[" + newTexts.get(ctx.expr(0)) + "]");
             } else {
                 String t = ctx.IDENT().getText();
                 if (!pythonSymbolTable.hasFunName(t)) {
-                    setAddressListener.setException();
+                    if (setAddressListener != null)
+                        setAddressListener.setException();
                     System.out.println(t + " : 정의되지 않은 함수가 호출되었습니다.");
                     errorDump.append(t + " : 정의되지 않은 함수가 호출되었습니다.\n");
+                } else if (pythonSymbolTable.hasLocalName(t) || pythonSymbolTable.hasGlobalName(t)) {
+                    if (setAddressListener != null)
+                        setAddressListener.setException();
+                    System.out.println(t + " : 잘못된 타입 접근입니다.");
+                    errorDump.append(t + " : 잘못된 타입 접근입니다.\n");
                 }
 
                 if (t.equals("_print"))
@@ -444,7 +486,10 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 setAddressListener.setException();
                 System.out.println(arrName + " : 정의되지 않은 배열이 호출되었습니다.");
                 errorDump.append(arrName + " : 정의되지 않은 배열이 호출되었습니다.\n");
-
+            } else if (pythonSymbolTable.hasFunName(arrName)) {
+                setAddressListener.setException();
+                System.out.println(arrName + " : 잘못된 타입 접근입니다.");
+                errorDump.append(arrName + " : 잘못된 타입 접근입니다.\n");
             }
             newTexts.put(ctx, arrName + "[" + newTexts.get(ctx.expr(0)) + "]" + " = " + newTexts.get(ctx.expr(1)));
         }

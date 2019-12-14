@@ -93,7 +93,7 @@ public class BytecodeGenListenerHelper {
         return local_decl.IDENT().toString();
     }
 
-    static String getFunName(Fun_declContext ctx) {
+    public static String getFunName(Fun_declContext ctx) {
         // <Fill in>
         return ctx.IDENT().toString();
     }

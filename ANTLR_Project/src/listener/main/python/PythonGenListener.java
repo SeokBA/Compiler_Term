@@ -15,6 +15,7 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
     TranslationGUI.setAddressListener setAddressListener;
     PythonSymbolTable pythonSymbolTable = new PythonSymbolTable();
+    private StringBuilder errorDump = new StringBuilder();
 
     public void setGUI(TranslationGUI.setAddressListener setAddressListener) {
         this.setAddressListener = setAddressListener;
@@ -27,8 +28,12 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         for (int i = 0; i < ctx.getChildCount(); i++) {
             programStr.append(newTexts.get(ctx.decl(i)));
         }
-        if (setAddressListener != null)
-            setAddressListener.outputData = programStr.toString();
+        if (setAddressListener != null) {
+            if (!errorDump.toString().equals(""))
+                setAddressListener.outputData = errorDump.toString();
+            else
+                setAddressListener.outputData = programStr.toString();
+        }
         System.out.println(programStr.toString());
     }
 
@@ -48,8 +53,11 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     public void enterVar_decl(MiniCParser.Var_declContext ctx) {
         String varName = ctx.IDENT().getText();
 
-        if (pythonSymbolTable.hasGlobalName(varName))
+        if (pythonSymbolTable.hasGlobalName(varName)) {
+            setAddressListener.setException();
             System.out.println(varName + " : 이미 정의된 변수입니다.");
+            errorDump.append(varName + " : 이미 정의된 변수입니다.\n");
+        }
 
 
         if (isArrayDecl(ctx)) {
@@ -106,8 +114,12 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
 
         String funcName = getFunName(ctx);
 
-        if (pythonSymbolTable.hasFunName(funcName))
+        if (pythonSymbolTable.hasFunName(funcName)) {
+            setAddressListener.setException();
+
             System.out.println(funcName + " : 이미 정의된 함수입니다.");
+            errorDump.append(funcName + " : 이미 정의된 함수입니다.\n");
+        }
 
         ParamsContext params;
 
@@ -237,8 +249,11 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     @Override
     public void enterLocal_decl(MiniCParser.Local_declContext ctx) {
         String varName = getLocalVarName(ctx);
-        if (pythonSymbolTable.hasLocalName(varName))
+        if (pythonSymbolTable.hasLocalName(varName)) {
+            setAddressListener.setException();
             System.out.println(varName + " : 이미 정의된 변수입니다.");
+            errorDump.append(varName + " : 이미 정의된 변수입니다.\n");
+        }
 
 
         if (isArrayDecl(ctx)) {
@@ -330,10 +345,13 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             if (ctx.getChild(0) == ctx.IDENT()) {
                 //
                 String vname = ctx.IDENT().getText();
-                if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname)))
-                    System.out.println(ctx.IDENT().getText() + " : 정의되지 않은 변수 호출이 발생했습니다.");
+                if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname))) {
+                    setAddressListener.setException();
+                    System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+                    errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다.\n");
+                }
                 //
-                newTexts.put(ctx, ctx.IDENT().getText());
+                newTexts.put(ctx, vname);
             } else {
                 newTexts.put(ctx, ctx.LITERAL().getText());
             }
@@ -362,8 +380,11 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             } else {
                 if (ctx.getChild(0) == ctx.IDENT()) {
                     String vname = ctx.IDENT().getText();
-                    if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname)))
+                    if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname))) {
+                        setAddressListener.setException();
                         System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+                        errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                    }
                     newTexts.put(ctx, ctx.IDENT().getText() + " = " + newTexts.get(ctx.expr(0)));
                 } else {
                     if (ctx.getChild(1).getText().equals("*")) {
@@ -397,11 +418,20 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             }
         } else if (ctx.getChildCount() == 4) {// 자식 노드가 네 개일 때.
             if (ctx.getChild(1).getText().equals("[")) {
-                newTexts.put(ctx, ctx.IDENT().getText() + "[" + newTexts.get(ctx.expr(0)) + "]");
+                String arrName = ctx.IDENT().getText();
+                if (!(pythonSymbolTable.hasGlobalName(arrName) || pythonSymbolTable.hasLocalName(arrName))) {
+                    setAddressListener.setException();
+                    System.out.println(arrName + " : 정의되지 않은 배열이 호출되었습니다.");
+                    errorDump.append(arrName + " : 정의되지 않은 배열 호출되었습니다.\n");
+                }
+                newTexts.put(ctx, arrName + "[" + newTexts.get(ctx.expr(0)) + "]");
             } else {
                 String t = ctx.IDENT().getText();
-                if (!pythonSymbolTable.hasFunName(t))
+                if (!pythonSymbolTable.hasFunName(t)) {
+                    setAddressListener.setException();
                     System.out.println(t + " : 정의되지 않은 함수가 호출되었습니다.");
+                    errorDump.append(t + " : 정의되지 않은 함수가 호출되었습니다.\n");
+                }
 
                 if (t.equals("_print"))
                     t = "print";
@@ -410,8 +440,12 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             }
         } else if (ctx.getChildCount() == 6) {// 자식 노드가 여섯 개일 때.
             String arrName = ctx.IDENT().getText();
-            if (!(pythonSymbolTable.hasLocalName(arrName) || pythonSymbolTable.hasGlobalName(arrName)))
+            if (!(pythonSymbolTable.hasLocalName(arrName) || pythonSymbolTable.hasGlobalName(arrName))) {
+                setAddressListener.setException();
                 System.out.println(arrName + " : 정의되지 않은 배열이 호출되었습니다.");
+                errorDump.append(arrName + " : 정의되지 않은 배열이 호출되었습니다.\n");
+
+            }
             newTexts.put(ctx, arrName + "[" + newTexts.get(ctx.expr(0)) + "]" + " = " + newTexts.get(ctx.expr(1)));
         }
     }

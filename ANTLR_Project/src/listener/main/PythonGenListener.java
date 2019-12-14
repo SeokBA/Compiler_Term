@@ -2,15 +2,16 @@ package listener.main;
 
 import generated.MiniCBaseListener;
 import generated.MiniCParser;
+import generated.MiniCParser.ParamsContext;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
+
 import static listener.main.PythonGenListenerHelper.*;
 import static listener.main.PythonSymbolTable.Type;
 
 
 public class PythonGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
-    SymbolTable symbolTable = new SymbolTable();
     TranslationGUI.setAddressListener setAddressListener;
     PythonSymbolTable pythonSymbolTable = new PythonSymbolTable();
 
@@ -44,11 +45,23 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
 //            | type_spec IDENT '[' LITERAL ']' ';'	;
 
     public void enterVar_decl(MiniCParser.Var_declContext ctx) {
+        String varName = ctx.IDENT().getText();
 
+        if (pythonSymbolTable.hasGlobalName(varName))
+            System.out.println(varName + " : 이미 정의된 변수입니다.");
+
+
+        if (isArrayDecl(ctx)) {
+            pythonSymbolTable.putGlobalVar(varName, Type.INTARRAY);
+        } else if (isDeclWithInit(ctx)) {
+            pythonSymbolTable.putGlobalVarWithInitVal(varName, Type.INT, initVal(ctx));
+        } else {
+            pythonSymbolTable.putGlobalVar(varName, Type.INT);
+        }
     }
 
 
-        @Override
+    @Override
     public void exitVar_decl(MiniCParser.Var_declContext ctx) {
         StringBuilder stringBuilder = new StringBuilder();
         if (ctx.getChildCount() == 3) {
@@ -85,6 +98,26 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             newTexts.put(ctx, ctx.VOID().getText());
         }
     }
+
+    @Override
+    public void enterFun_decl(MiniCParser.Fun_declContext ctx) {
+        pythonSymbolTable.initFunDecl();
+
+        String funcName = getFunName(ctx);
+
+        if (pythonSymbolTable.hasFunName(funcName))
+            System.out.println(funcName + " : 이미 정의된 함수입니다.");
+
+        ParamsContext params;
+
+//        if(funcName.equals("main")) {
+//            pythonSymbolTable.putLocalVar("args", SymbolTable.Type.INTARRAY);
+//        }
+        pythonSymbolTable.putFunSpecStr(ctx);
+        params = (ParamsContext) ctx.getChild(3);
+        pythonSymbolTable.putParams(params);
+    }
+
 
     //    fun_decl	: type_spec IDENT '(' params ')' compound_stmt ;
     @Override
@@ -199,6 +232,23 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
         newTexts.put(ctx, stringBuilder.toString());
     }
 
+
+    @Override
+    public void enterLocal_decl(MiniCParser.Local_declContext ctx) {
+        String varName = getLocalVarName(ctx);
+        if (pythonSymbolTable.hasLocalName(varName))
+            System.out.println(varName + " : 이미 정의된 변수입니다.");
+
+
+        if (isArrayDecl(ctx)) {
+            pythonSymbolTable.putLocalVar(varName, Type.INTARRAY);
+        } else if (isDeclWithInit(ctx)) {
+            pythonSymbolTable.putLocalVarWithInitVal(varName, Type.INT, initVal(ctx));
+        } else {
+            pythonSymbolTable.putLocalVar(varName, Type.INT);
+        }
+    }
+
     //    local_decl	: type_spec IDENT ';'
 //            | type_spec IDENT '=' LITERAL ';'
 //            | type_spec IDENT '[' LITERAL ']' ';'	;
@@ -277,6 +327,11 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
     public void exitExpr(MiniCParser.ExprContext ctx) {
         if (ctx.getChildCount() == 1) { // 자식 노드가 한 개일 때.
             if (ctx.getChild(0) == ctx.IDENT()) {
+                //
+                String vname = ctx.IDENT().getText();
+                if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname)))
+                    System.out.println(ctx.IDENT().getText() + " : 정의되지 않은 변수 호출이 발생했습니다.");
+                //
                 newTexts.put(ctx, ctx.IDENT().getText());
             } else {
                 newTexts.put(ctx, ctx.LITERAL().getText());
@@ -305,6 +360,9 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 newTexts.put(ctx, "(" + newTexts.get(ctx.expr(0)) + ")");
             } else {
                 if (ctx.getChild(0) == ctx.IDENT()) {
+                    String vname = ctx.IDENT().getText();
+                    if (!(pythonSymbolTable.hasGlobalName(vname) || pythonSymbolTable.hasLocalName(vname)))
+                        System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
                     newTexts.put(ctx, ctx.IDENT().getText() + " = " + newTexts.get(ctx.expr(0)));
                 } else {
                     if (ctx.getChild(1).getText().equals("*")) {
@@ -341,13 +399,19 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
                 newTexts.put(ctx, ctx.IDENT().getText() + "[" + newTexts.get(ctx.expr(0)) + "]");
             } else {
                 String t = ctx.IDENT().getText();
+                if (!pythonSymbolTable.hasFunName(t))
+                    System.out.println(t + " : 정의되지 않은 함수가 호출되었습니다.");
+
                 if (t.equals("_print"))
                     t = "print";
 
                 newTexts.put(ctx, t + "(" + newTexts.get(ctx.args()) + ")");
             }
         } else if (ctx.getChildCount() == 6) {// 자식 노드가 여섯 개일 때.
-            newTexts.put(ctx, ctx.IDENT().getText() + "[" + newTexts.get(ctx.expr(0)) + "]" + " = " + newTexts.get(ctx.expr(1)));
+            String arrName = ctx.IDENT().getText();
+            if (!(pythonSymbolTable.hasLocalName(arrName) || pythonSymbolTable.hasGlobalName(arrName)))
+                System.out.println(arrName + " : 정의되지 않은 배열이 호출되었습니다.");
+            newTexts.put(ctx, arrName + "[" + newTexts.get(ctx.expr(0)) + "]" + " = " + newTexts.get(ctx.expr(1)));
         }
     }
 

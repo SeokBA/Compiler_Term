@@ -8,6 +8,7 @@ import static listener.main.BytecodeGenListenerHelper.getFunName;
 
 public class JavaGenListener extends MiniCBaseListener implements ParseTreeListener {
     ParseTreeProperty<String> newTexts = new ParseTreeProperty<String>();
+    JavaSymbolTable symbolTable = new JavaSymbolTable();
     TranslationGUI.setAddressListener setAddressListener;
 
 
@@ -16,7 +17,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     }
 
     @Override
-    public void exitProgram(MiniCParser.ProgramContext ctx) {
+    public void exitProgram(MiniCParser.ProgramContext ctx) {//replaceAll("\n", "\n    ");
         int size = ctx.getChildCount();
         String programStr="public class TestJava {";
         programStr+="\n"+newTexts.get(ctx.decl(0));
@@ -81,6 +82,9 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     @Override
     public void exitVar_decl(MiniCParser.Var_declContext ctx) {//유형에 따라 다른 결과값을 가지고 newTexts에 put함
         String type = newTexts.get(ctx.type_spec());//앞에서 변형한 type_spec()을 newTexts에서 가져옴
+        if(type.equals("void ")){
+            type="int ";
+        }
         String ident = ctx.getChild(1).getText();
         String op = ctx.getChild(2).getText();//자식에서 text를 직접 가져옴
         if (op.equals("=")) {//연산자에 맞게 수정하여 newtext에 넣어줌
@@ -120,7 +124,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String par = newTexts.get(ctx.getChild(0));//newTexts에서 첫번째 자식을 가져옴
         String temp = ctx.getChild(0).getText();
         if (temp.equals("void")) {
-            par = "void";
+            par = " ";//자바에서 매개변수로 void만 주어지는 경우가 없으므로 빈칸으로 바꾸기
         }
         for (int i = 1; i <param_size-1; i++) {//param이 여러개면 반복문을 통해
             par = par + "," + newTexts.get(ctx.param(i));//','로 이어줌
@@ -137,13 +141,19 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     public void exitParam(MiniCParser.ParamContext ctx) {
         int size = ctx.getChildCount();
         if (size>2 &&(ctx.getChild(2).getText()).equals("[")) {//자식 갯수가 2개 이상이고 인덱스 2번 자식이 '['라면
-            String spec = ctx.type_spec().getText();
+            String type = ctx.type_spec().getText();
+            if(type.equals("void ")){
+                type="int ";//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
+            }
             String id = ctx.IDENT().getText();//필요한 문자열들을 가져오기
-            newTexts.put(ctx, spec + " " + id + "[ ]");//type_spec IDENT '[' ']'
+            newTexts.put(ctx, type + " " + id + "[ ]");//type_spec IDENT '[' ']'
         } else {
-            String spec = ctx.type_spec().getText();
+            String type = ctx.type_spec().getText();
+            if(type.equals("void")){
+                type="int";//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
+            }
             String id = ctx.IDENT().getText();
-            newTexts.put(ctx, spec + " " + id);// type_spec IDENT
+            newTexts.put(ctx, type + " " + id);// type_spec IDENT
         }
     }
 
@@ -207,6 +217,9 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     @Override
     public void exitLocal_decl(MiniCParser.Local_declContext ctx) {
         String type = newTexts.get(ctx.type_spec());
+        if(type.equals("void ")){
+            type="int ";//지역 변수가 타입이 void인 경우는 존재하지 않음
+        }
         String ident = ctx.getChild(1).getText();
         if (ctx.getChildCount() < 4) {
             newTexts.put(ctx, type + ident + ";");
@@ -262,6 +275,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
 
     @Override
     public void enterFun_decl(MiniCParser.Fun_declContext ctx) {
+        symbolTable.putFunSpecStr(ctx);
         newTexts.put(ctx, ctx.getText());
     }
 
@@ -288,6 +302,13 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String s0 = null, s2 = null, op = null;
         if(ctx.getChildCount() == 4){//IDENT '[' expr ']' 과 IDENT '(' args ')'	처리하기
             String fname=ctx.getChild(0).getText();
+            if(symbolTable.getFunSpecStr(fname) == null){
+                try {
+                    throw new Exception();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             String exp2=ctx.getChild(1).getText();
             String exp3= newTexts.get(ctx.getChild(2));//처리된  expr 결과 가져오기
             String exp4= ctx.getChild(3).getText();

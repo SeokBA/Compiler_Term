@@ -333,7 +333,22 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         }
         else if(isBinaryOperation(ctx)){//expr '/' expr 이런 얘들
 
+            //a=5,a=h이런 문구에서 변수 모조리 검사(연산자 양쪽 다 검사)
+            try{
+                Integer.parseInt(ctx.getChild(0).getText());//숫자로 변환이 잘되면 넘어가고
+            }catch(NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
+                String vname = ctx.getChild(0).getText();
+                if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname)))
+                    System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+            }
 
+            try{
+                Integer.parseInt(ctx.getChild(2).getText());
+            }catch(NumberFormatException e) {//숫자가 아니면 검사하기
+                String vname = ctx.getChild(2).getText();
+                if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname)))
+                    System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+            }
         }
         else if(ctx.getChildCount()==2){//'++' expr이런 얘들
             String varname = ctx.getChild(1).getText();

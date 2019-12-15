@@ -154,7 +154,10 @@ public class BytecodeSymbolTable {
 
 	String getVarId(String name){
 		// <Fill here>
-		return String.valueOf(_lsymtable.get(name).id);
+		VarInfo var = _lsymtable.get(name);
+		if(var == null)
+			var = _gsymtable.get(name);
+		return String.valueOf(var.id);
 	}
 
 	Type getVarType(String name){
@@ -190,5 +193,9 @@ public class BytecodeSymbolTable {
 		String sname = "";
 		sname += getVarId(ctx.IDENT().getText());
 		return sname;
+	}
+
+	public boolean isLocalVar(String name){
+		return !(_lsymtable.get(name) == null);
 	}
 }

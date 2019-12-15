@@ -115,8 +115,11 @@ public class BytecodeGenListenerHelper {
     static String getFunProlog() {
         return ".class public " + getCurrentClassName() + "\n" +
                 ".super java/lang/Object\n" +
-                "; standard initializer\n" +
-                ".method public <init>()V\n" +
+                "; standard initializer\n";
+    }
+
+    static String getFunInit() {
+        return ".method public <init>()V\n" +
                 "\taload_0\n" +
                 "\tinvokenonvirtual java/lang/Object/<init>()V\n" +
                 "\treturn\n" +

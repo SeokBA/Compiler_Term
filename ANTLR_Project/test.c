@@ -5,6 +5,8 @@ int add(int x, int y) {
 }
 
 void main () {
-	int t = 33;  
-	_print(add(1,t));
+	int t = 33;
+	int k[3];
+	k[0] = 5;
+	_print(add(1, k[0]));
 }

@@ -8,7 +8,7 @@ import generated.MiniCParser.Var_declContext;
 import java.util.HashMap;
 import java.util.Map;
 
-import static listener.main.java.JavaGenListenerHelper.getFunName;
+import static listener.main.java.JavaGenListenerHelper.*;
 
 
 public class JavaSymbolTable {

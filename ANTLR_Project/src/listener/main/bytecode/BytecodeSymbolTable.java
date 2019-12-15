@@ -37,27 +37,24 @@ public class BytecodeSymbolTable {
 		public String sigStr;
 	}
 
-	// add
 	static public class ArrInfo extends VarInfo{
-		VarInfo[] varArr;
+		int[] varArr;
 		int size;
 
 		public ArrInfo(Type type, int id, int size) {
 			super(type, id);
-			VarInfo[] varArr = new VarInfo[size];
-			for(int i = 0; i < size; i++)
-				varArr[i] = new VarInfo(type, id);
+			this.size = size;
+			int[] varArr = new int[size];
 		}
 
 		public void idxAssignment(int index, VarInfo var){
-			varArr[index].initVal = var.initVal;
+			varArr[index] = var.initVal;
 		}
 
 		public void idxAssignment(int index, int initVal){
-			varArr[index].initVal = initVal;
+			varArr[index] = initVal;
 		}
 	}
-	// add End
 
 	private Map<String, VarInfo> _lsymtable = new HashMap<>();	// local v.
 	private Map<String, VarInfo> _gsymtable = new HashMap<>();	// global v.
@@ -91,11 +88,6 @@ public class BytecodeSymbolTable {
 		_gsymtable.put(varname, new VarInfo(type, _globalVarID++));
 	}
 
-	void putGlobalArr(String varname, Type type, int size){
-		//<Fill here>
-		_gsymtable.put(varname, new ArrInfo(type, _globalVarID++, size));
-	}
-
 	void putLocalVarWithInitVal(String varname, Type type, int initVar){
 		//<Fill here>
 		_lsymtable.put(varname, new VarInfo(type, _localVarID++, initVar));
@@ -103,6 +95,15 @@ public class BytecodeSymbolTable {
 	void putGlobalVarWithInitVal(String varname, Type type, int initVar){
 		//<Fill here>
 		_gsymtable.put(varname, new VarInfo(type, _globalVarID++, initVar));
+	}
+
+	void putLocalArr(String varname, Type type, int size){
+		//<Fill here>
+		_lsymtable.put(varname, new ArrInfo(type, _localVarID++, size));
+	}
+	void putGlobalArr(String varname, Type type, int size){
+		//<Fill here>
+		_gsymtable.put(varname, new ArrInfo(type, _globalVarID++, size));
 	}
 
 	void putParams(MiniCParser.ParamsContext params) {

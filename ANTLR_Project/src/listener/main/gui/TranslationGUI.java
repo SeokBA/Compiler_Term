@@ -135,6 +135,7 @@ public class TranslationGUI extends JFrame {
         String outputFileName;
         public String outputData;
         String extension;
+        boolean exception = false;
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -183,6 +184,7 @@ public class TranslationGUI extends JFrame {
                             extension = ".j";
                         } catch (Exception err) {
                             setConsole("Translation Error");
+                            return;
                         }
                         break;
                     case 1:
@@ -194,6 +196,7 @@ public class TranslationGUI extends JFrame {
                             extension = ".java";
                         } catch (Exception err) {
                             setConsole("\nTranslation Error");
+                            return;
                         }
                         break;
                     case 2:
@@ -205,10 +208,16 @@ public class TranslationGUI extends JFrame {
                             extension = ".py";
                         } catch (Exception err) {
                             setConsole("Translation Error");
+                            return;
                         }
                         break;
                     default:
                         break;
+                }
+
+                if(exception){ // walker 실행 중 오류가 있었을 시,
+                    setConsole(outputData);
+                    return;
                 }
 
                 folderChooser = new JFileChooser();
@@ -232,6 +241,10 @@ public class TranslationGUI extends JFrame {
                     ex.printStackTrace();
                 }
             }
+        }
+
+        public void setException(){
+            exception = true;
         }
     }
 

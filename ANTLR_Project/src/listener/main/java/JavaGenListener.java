@@ -126,7 +126,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             String literal = ctx.getChild(3).getText();
             newTexts.put(ctx, type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
         } else {
-            newTexts.put(ctx, type + ident + ";");
+            newTexts.put(ctx, type + ident + "=0;");
         }
 
     }
@@ -215,7 +215,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
 
     @Override
     public void exitExpr_stmt(MiniCParser.Expr_stmtContext ctx) {
-        newTexts.put(ctx, newTexts.get(ctx.getChild(0)) + ";");//newTexts에서 expr을 가져와 ;와 합함
+        newTexts.put(ctx, newTexts.get(ctx.getChild(0)) + ";");//newTexts에서 expr을 가져와 ;와 합함(초기화 자동으로 해야 에러가 나지 않음)
     }
 
     @Override
@@ -289,7 +289,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
 
         String ident = ctx.getChild(1).getText();
         if (ctx.getChildCount() < 4) {
-            newTexts.put(ctx, type + ident + ";");
+            newTexts.put(ctx, type + ident + "=0;");//a++나 더할 때 에러 검출 막기 위해 초기화 미리 해줌
             return;
         } else {// ;까지 합하면 4개이므로
             String op = ctx.getChild(2).getText();

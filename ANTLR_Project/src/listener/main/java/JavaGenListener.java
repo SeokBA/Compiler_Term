@@ -399,12 +399,23 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             //a=5,a=h이런 문구에서 변수 모조리 검사(연산자 양쪽 다 검사)
 
            if(ctx.getChild(1).getText().equals("=")){// k = i / 2;이 경우 i/2는 선언 검사 건너뛰기
-               if(ctx.getChild(2).getChildCount() == 1){
-                   try{
+                   try {
                        Integer.parseInt(ctx.getChild(0).getText());//숫자로 변환이 잘되면 넘어가고
-                   }catch(NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
+                   } catch (NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
                        String vname = ctx.getChild(0).getText();
-                       if(!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
+                       if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))) {
+                           if (setAddressListener != null)
+                               setAddressListener.setException();
+                           System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+                           errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                       }
+                   }
+               if(ctx.getChild(2).getChildCount() == 1) {
+                   try{
+                       Integer.parseInt(ctx.getChild(2).getText());
+                   }catch(NumberFormatException e) {//숫자가 아니면 검사하기
+                       String vname = ctx.getChild(2).getText();
+                       if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
                            if (setAddressListener != null)
                                setAddressListener.setException();
                            System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");

@@ -2,8 +2,6 @@ package listener.main.python;
 
 import generated.MiniCParser;
 import generated.MiniCParser.Fun_declContext;
-import generated.MiniCParser.Local_declContext;
-import generated.MiniCParser.Var_declContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,11 +41,9 @@ public class PythonSymbolTable {
     private Map<String, FInfo> _fsymtable = new HashMap<>();    // function
 
 
-    public static boolean hasFlag = false;
     private int _globalVarID = 0;
     private int _localVarID = 0;
-    private int _labelID = 0;
-    private int _tempVarID = 0;
+
 
     PythonSymbolTable() {
         initFunDecl();
@@ -56,8 +52,6 @@ public class PythonSymbolTable {
 
     void initFunDecl() {        // at each func decl
         _localVarID = 0;
-        _labelID = 0;
-        _tempVarID = 32;
         _lsymtable = new HashMap<>();
     }
 
@@ -97,16 +91,6 @@ public class PythonSymbolTable {
         _fsymtable.put("_print", printlninfo);
     }
 
-    public String getFunSpecStr(String fname) {
-        // <Fill here>
-        return _fsymtable.get(fname).sigStr;
-    }
-
-    public String getFunSpecStr(Fun_declContext ctx) {
-        // <Fill here>
-        return _fsymtable.get(ctx.getText()).sigStr;
-    }
-
     public String putFunSpecStr(Fun_declContext ctx) {
         String fname = getFunName(ctx);
         String argtype = "";
@@ -142,42 +126,5 @@ public class PythonSymbolTable {
 
     boolean hasGlobalName(String name) {
         return _gsymtable.containsKey(name);
-    }
-
-    String getVarId(String name) {
-        // <Fill here>
-        return String.valueOf(_lsymtable.get(name).id);
-    }
-
-    Type getVarType(String name) {
-        VarInfo lvar = (VarInfo) _lsymtable.get(name);
-        if (lvar != null) {
-            return lvar.type;
-        }
-
-        VarInfo gvar = (VarInfo) _gsymtable.get(name);
-        if (gvar != null) {
-            return gvar.type;
-        }
-
-        return Type.ERROR;
-    }
-
-    String newTempVar() {
-        String id = "";
-        return id + _tempVarID--;
-    }
-
-    // global
-    public String getVarId(Var_declContext ctx) {
-        // <Fill here>
-        return String.valueOf(_gsymtable.get(ctx.getText()).id);
-    }
-
-    // local
-    public String getVarId(Local_declContext ctx) {
-        String sname = "";
-        sname += getVarId(ctx.IDENT().getText());
-        return sname;
     }
 }

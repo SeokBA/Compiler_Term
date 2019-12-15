@@ -58,6 +58,16 @@ public class JavaSymbolTable {
         _tempVarID = 32;
         _lsymtable = new HashMap<>();
     }
+    boolean hasFunName(String name) {
+        return _fsymtable.containsKey(name);
+    }
+    boolean hasLocalName(String name) {
+        return _lsymtable.containsKey(name);
+    }
+    boolean hasGlobalName(String name) {
+        return _gsymtable.containsKey(name);
+    }
+
 
     void putLocalVar(String varname, Type type){
         //<Fill here>
@@ -88,10 +98,7 @@ public class JavaSymbolTable {
 
     private void initFunTable() {
         FInfo printlninfo = new FInfo();
-        printlninfo.sigStr = "java/io/PrintStream/println(I)V";
-
         FInfo maininfo = new FInfo();
-        maininfo.sigStr = "main([Ljava/lang/String;)V";
         _fsymtable.put("_print", printlninfo);
         _fsymtable.put("main", maininfo);
     }
@@ -135,9 +142,7 @@ public class JavaSymbolTable {
 
         return Type.ERROR;
     }
-    String newLabel() {
-        return "label" + _labelID++;
-    }
+
 
     String newTempVar() {
         String id = "";
@@ -145,13 +150,13 @@ public class JavaSymbolTable {
     }
 
     // global
-    public String getVarId(Var_declContext ctx) {
+    public String getGlobalVarId(Var_declContext ctx) {
         // <Fill here>
         return String.valueOf(_gsymtable.get(ctx.getText()).id);
     }
 
     // local
-    public String getVarId(Local_declContext ctx) {
+    public String getLocalVarId(Local_declContext ctx) {
         String sname = "";
         sname += getVarId(ctx.IDENT().getText());
         return sname;

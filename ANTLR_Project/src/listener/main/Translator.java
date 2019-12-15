@@ -3,7 +3,6 @@ package listener.main;
 import generated.MiniCLexer;
 import generated.MiniCParser;
 import listener.main.bytecode.BytecodeGenListener;
-import listener.main.python.PythonGenListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,8 +17,8 @@ public class Translator {
     private static OPTIONS getOption(String[] args) {
         if (args.length < 1)
 //            return OPTIONS.JAVA;
-            return OPTIONS.PYTHON;
-//			return OPTIONS.BYTECODEGEN;
+//            return OPTIONS.PYTHON;
+			return OPTIONS.BYTECODEGEN;
 
         if (args[0].startsWith("-p")
                 || args[0].startsWith("-P"))
@@ -44,7 +43,7 @@ public class Translator {
     }
 
     public static void main(String[] args) throws Exception {
-        CharStream codeCharStream = CharStreams.fromFileName("/Users/min-yungi/Desktop/Git/Compiler_Term/ANTLR_Project/test.c");
+        CharStream codeCharStream = CharStreams.fromFileName("test.c");
         MiniCLexer lexer = new MiniCLexer(codeCharStream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MiniCParser parser = new MiniCParser(tokens);
@@ -52,17 +51,14 @@ public class Translator {
 
         ParseTreeWalker walker = new ParseTreeWalker();
         switch (getOption(args)) {
-            case PRETTYPRINT:
-                // walker.walk(new MiniCPrintListener(), tree );
-                break;
+//            case PRETTYPRINT:
+//                walker.walk(new MiniCPrintListener(), tree);
+//                break;
             case BYTECODEGEN:
                 walker.walk(new BytecodeGenListener(), tree);
                 break;
-            case UCODEGEN:
-                // walker.walk(new UCodeGenListener(), tree );
-                break;
-            case PYTHON:
-                walker.walk(new PythonGenListener(), tree);
+//            case PYTHON:
+//                walker.walk(new PythonGenListener(), tree);
 //            case JAVA:
 //                walker.walk(new JavaGenListener(), tree);
             default:

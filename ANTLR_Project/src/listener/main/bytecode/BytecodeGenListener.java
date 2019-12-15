@@ -279,7 +279,7 @@ public class BytecodeGenListener extends MiniCBaseListener implements ParseTreeL
     public void exitReturn_stmt(MiniCParser.Return_stmtContext ctx) {
         // <(4) Fill here>
         String returnStr;
-        if (ctx.getChildCount() == 3)
+        if (isIntReturn(ctx))
             returnStr = newTexts.get(ctx.expr()) + "i" + ctx.RETURN().toString() + "\n";
         else
             returnStr = ctx.RETURN().toString() + "\n";

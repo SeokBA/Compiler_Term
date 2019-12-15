@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static listener.main.bytecode.BytecodeGenListenerHelper.getFunName;
+import static listener.main.bytecode.BytecodeGenListenerHelper.isVoidF;
 
 
 public class BytecodeSymbolTable {
@@ -45,14 +46,6 @@ public class BytecodeSymbolTable {
 			super(type, id);
 			this.size = size;
 			int[] varArr = new int[size];
-		}
-
-		public void idxAssignment(int index, VarInfo var){
-			varArr[index] = var.initVal;
-		}
-
-		public void idxAssignment(int index, int val){
-			varArr[index] = val;
 		}
 	}
 
@@ -147,7 +140,7 @@ public class BytecodeSymbolTable {
 				argtype += "I";
 		}
 
-		if (ctx.type_spec().INT() != null)
+		if (!isVoidF(ctx))
 			rtype = "I";
 
 		res =  fname + "(" + argtype + ")" + rtype;

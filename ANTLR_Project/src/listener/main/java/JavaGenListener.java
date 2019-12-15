@@ -121,12 +121,12 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String op = ctx.getChild(2).getText();//자식에서 text를 직접 가져옴
         if (op.equals("=")) {//연산자에 맞게 수정하여 newtext에 넣어줌
             String literal = ctx.getChild(3).getText();
-            newTexts.put(ctx, type + ident + " = " + literal + ";");
+            newTexts.put(ctx, "static "+type + ident + " = " + literal + ";");
         } else if (op.equals("[")) {
             String literal = ctx.getChild(3).getText();
-            newTexts.put(ctx, type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
+            newTexts.put(ctx, "static "+type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
         } else {
-            newTexts.put(ctx, type + ident + "=0;");
+            newTexts.put(ctx, "static "+type + ident + "=0;");
         }
 
     }
@@ -399,12 +399,23 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             //a=5,a=h이런 문구에서 변수 모조리 검사(연산자 양쪽 다 검사)
 
            if(ctx.getChild(1).getText().equals("=")){// k = i / 2;이 경우 i/2는 선언 검사 건너뛰기
-               if(ctx.getChild(2).getChildCount() == 1){
-                   try{
+                   try {
                        Integer.parseInt(ctx.getChild(0).getText());//숫자로 변환이 잘되면 넘어가고
-                   }catch(NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
+                   } catch (NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
                        String vname = ctx.getChild(0).getText();
-                       if(!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
+                       if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))) {
+                           if (setAddressListener != null)
+                               setAddressListener.setException();
+                           System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+                           errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                       }
+                   }
+               if(ctx.getChild(2).getChildCount() == 1) {
+                   try{
+                       Integer.parseInt(ctx.getChild(2).getText());
+                   }catch(NumberFormatException e) {//숫자가 아니면 검사하기
+                       String vname = ctx.getChild(2).getText();
+                       if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
                            if (setAddressListener != null)
                                setAddressListener.setException();
                            System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");

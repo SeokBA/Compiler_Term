@@ -106,17 +106,6 @@ public class JavaGenListenerHelper {
         return ctx.getChildCount() == 5;
     }
 
-    static String getFunProlog() {
-        return ".class public " + getCurrentClassName() + "\n" +
-                ".super java/lang/Object\n" +
-                "; standard initializer\n" +
-                ".method public <init>()V\n" +
-                "\taload_0\n" +
-                "\tinvokenonvirtual java/lang/Object/<init>()V\n" +
-                "\treturn\n" +
-                ".end method\n";
-    }
-
     static String getCurrentClassName() {
         return "Test";
     }

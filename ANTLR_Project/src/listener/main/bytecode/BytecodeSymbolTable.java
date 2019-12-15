@@ -51,8 +51,8 @@ public class BytecodeSymbolTable {
 			varArr[index] = var.initVal;
 		}
 
-		public void idxAssignment(int index, int initVal){
-			varArr[index] = initVal;
+		public void idxAssignment(int index, int val){
+			varArr[index] = val;
 		}
 	}
 

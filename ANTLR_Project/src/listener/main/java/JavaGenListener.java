@@ -89,8 +89,8 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             } catch (Exception e) {
                 e.printStackTrace();
             }//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
-
         }
+        symbolTable.putGlobalVar(ctx.IDENT().toString(), JavaSymbolTable.Type.INT);//위에 조건 통과했다면 무조건 INT형이니까
         String ident = ctx.getChild(1).getText();
         String op = ctx.getChild(2).getText();//자식에서 text를 직접 가져옴
         if (op.equals("=")) {//연산자에 맞게 수정하여 newtext에 넣어줌
@@ -179,10 +179,6 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     }
 
     @Override
-    public void enterExpr_stmt(MiniCParser.Expr_stmtContext ctx) {
-    }
-
-    @Override
     public void exitExpr_stmt(MiniCParser.Expr_stmtContext ctx) {
         newTexts.put(ctx, newTexts.get(ctx.getChild(0)) + ";");//newTexts에서 expr을 가져와 ;와 합함
     }
@@ -223,6 +219,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     @Override
     public void enterLocal_decl(MiniCParser.Local_declContext ctx) {
         newTexts.put(ctx, ctx.getText());
+
     }
 
     @Override
@@ -236,6 +233,8 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             }//자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
             System.out.println("void 타입 지역변수는 올 수 없습니다.");
         }
+        symbolTable.putLocalVar(ctx.IDENT().toString(), JavaSymbolTable.Type.INT);//위에 조건 통과했다면 무조건 INT형이니까
+
         String ident = ctx.getChild(1).getText();
         if (ctx.getChildCount() < 4) {
             newTexts.put(ctx, type + ident + ";");
@@ -248,10 +247,6 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
                 newTexts.put(ctx, type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
             }
         }
-    }
-
-    @Override
-    public void enterIf_stmt(MiniCParser.If_stmtContext ctx) {
     }
 
     @Override
@@ -316,17 +311,39 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
     @Override
     public void exitExpr(MiniCParser.ExprContext ctx) {
         String s0 = null, s2 = null, op = null;
-        if(ctx.getChildCount() == 4){//IDENT '[' expr ']' 과 IDENT '(' args ')'	처리하기
-            String fname=ctx.getChild(0).getText();
-            if(symbolTable.getFunSpecStr(fname) == null && !fname.equals("_print")){
 
+        if(ctx.getChildCount()>=4){//IDENT '[' expr ']' 과 IDENT '(' args ')' IDENT '[' expr ']' '=' expr 선언 여부 확인
+            String fname=ctx.getChild(0).getText();
+            if(ctx.getChild(1).getText().equals("(")&&!symbolTable.hasFunName(fname) && !fname.equals("_print")){//함수인 경우    IDENT '(' args ')'
                 try {
-                    System.out.println("선언되지 않은 함수입니다.");
+                    System.out.println(fname+": 선언되지 않은 함수입니다.");
                     throw new Exception();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            else if(ctx.getChild(1).getText().equals("[")&&!(symbolTable.hasGlobalName(fname) || symbolTable.hasLocalName(fname))){//IDENT '[' expr ']'   IDENT '[' expr ']' '=' expr
+                try {
+                    System.out.println(fname+": 선언되지 않은 배열입니다.");
+                    throw new Exception();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else if(isBinaryOperation(ctx)){//expr '/' expr 이런 얘들
+
+
+        }
+        else if(ctx.getChildCount()==2){//'++' expr이런 얘들
+            String varname = ctx.getChild(1).getText();
+            if (!(symbolTable.hasGlobalName(varname) || symbolTable.hasLocalName(varname)))
+                System.out.println( ctx.getChild(1).getText() + " : 정의되지 않은 변수 호출이 발생했습니다.");
+        }
+//=================================선언된 함수인지 확인하는 부분 끝
+
+        if(ctx.getChildCount() == 4){//IDENT '[' expr ']' 과 IDENT '(' args ')'	처리하기
+            String fname=ctx.getChild(0).getText();
             String exp2=ctx.getChild(1).getText();
             String exp3= newTexts.get(ctx.getChild(2));//처리된  expr 결과 가져오기
             String exp4= ctx.getChild(3).getText();

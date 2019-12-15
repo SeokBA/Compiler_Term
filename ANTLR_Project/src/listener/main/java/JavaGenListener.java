@@ -121,12 +121,12 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         String op = ctx.getChild(2).getText();//자식에서 text를 직접 가져옴
         if (op.equals("=")) {//연산자에 맞게 수정하여 newtext에 넣어줌
             String literal = ctx.getChild(3).getText();
-            newTexts.put(ctx, type + ident + " = " + literal + ";");
+            newTexts.put(ctx, "static "+type + ident + " = " + literal + ";");
         } else if (op.equals("[")) {
             String literal = ctx.getChild(3).getText();
-            newTexts.put(ctx, type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
+            newTexts.put(ctx, "static "+type +ident+"[] = new "+ type.split(" ")[0]+"["+ ctx.LITERAL().getText() + "];");//중간에 빈칸없애기 위해 split사용
         } else {
-            newTexts.put(ctx, type + ident + "=0;");
+            newTexts.put(ctx, "static "+type + ident + "=0;");
         }
 
     }

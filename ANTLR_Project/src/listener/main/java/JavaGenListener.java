@@ -30,7 +30,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
         }
         programStr=programStr.replaceAll("\n", "\n    ");
         programStr+="\n}";
-        System.out.println(programStr);
+        // System.out.println(programStr);
         if (setAddressListener != null) {
             if (!errorDump.toString().equals(""))
                 setAddressListener.outputData = errorDump.toString();//에러가 아래에서 걸리면 지금까지 모은 에러 문구 한번에 넘겨주기

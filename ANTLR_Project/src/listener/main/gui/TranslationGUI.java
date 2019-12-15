@@ -135,10 +135,13 @@ public class TranslationGUI extends JFrame {
         String outputFileName;
         public String outputData;
         String extension;
+        String osStr = System.getProperty("os.name").toLowerCase();
+        String saveFileName;
         boolean exception = false;
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            exception = false;
             if (e.getSource() == btnFileSelect) {
                 fileChooser = new JFileChooser();
                 fileChooser.setDialogTitle("MiniC 파일 선택");
@@ -148,11 +151,21 @@ public class TranslationGUI extends JFrame {
                     return;
                 }
                 inputFileName = fileChooser.getSelectedFile().getPath();
-                stringTokenizer = new StringTokenizer(inputFileName, "/");
+
+                if(osStr.contains("win"))
+                    stringTokenizer = new StringTokenizer(inputFileName, "\\");
+                else if(osStr.contains("mac"))
+                    stringTokenizer = new StringTokenizer(inputFileName, "/");
+                else{
+                    JOptionPane.showMessageDialog(null, "이 프로그램은 현재 컴퓨터의 OS를 지원하지 않습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
                 while (stringTokenizer.hasMoreTokens())
                     outputFileName = stringTokenizer.nextToken();
                 stringTokenizer = new StringTokenizer(outputFileName, ".");
                 outputFileName = stringTokenizer.nextToken();
+
                 taFileAddress.setText(inputFileName);
                 setConsole("Source File Path : " + inputFileName);
             }
@@ -229,7 +242,12 @@ public class TranslationGUI extends JFrame {
                     JOptionPane.showMessageDialog(null, "폴더를 선택하지 않았습니다.", "경고", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                String saveFileName = folderChooser.getSelectedFile().getPath() + "/" + outputFileName + extension;
+
+                if(osStr.contains("win"))
+                    saveFileName = folderChooser.getSelectedFile().getPath() + "\\" + outputFileName + extension;
+                else if(osStr.contains("mac"))
+                    saveFileName = folderChooser.getSelectedFile().getPath() + "/" + outputFileName + extension;
+
                 setConsole("Save Path : " + saveFileName);
                 try {
                     OutputStream outputStream = new FileOutputStream(saveFileName);

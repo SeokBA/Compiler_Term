@@ -34,7 +34,7 @@ public class PythonGenListener extends MiniCBaseListener implements ParseTreeLis
             else
                 setAddressListener.outputData = programStr.toString();
         }
-        System.out.println(programStr.toString());
+        // System.out.println(programStr.toString());
     }
 
     //    decl		: var_decl | fun_decl		;

@@ -177,7 +177,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             if(type.equals("void")){
                 if (setAddressListener != null)
                     setAddressListener.setException();
-                System.out.println(ctx.IDENT().getText() +"void 타입 배열은 올 수 없습니다.");
+                System.out.println(ctx.IDENT().getText() +" : void 타입 배열은 올 수 없습니다.");
                 errorDump.append(ctx.IDENT().getText() + " : void 타입 배열은 올 수 없습니다.\n");
                 //자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
             }
@@ -189,7 +189,7 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
             if(type.equals("void")){
                 if (setAddressListener != null)
                     setAddressListener.setException();
-                System.out.println(ctx.IDENT().getText() +": void 타입 매개변수는 올 수 없습니다.");
+                System.out.println(ctx.IDENT().getText() +" : void 타입 매개변수는 올 수 없습니다.");
                 errorDump.append(ctx.IDENT().getText() + " : void 타입 매개변수는 올 수 없습니다.\n");
                //자바에선 type_spec IDENT, type_spec IDENT '[' ']'이 경우에서 타입이 void가 오는 경우가 없으므로
             }
@@ -400,28 +400,29 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
                }
            }
            else{
-
-               try{
-                   Integer.parseInt(ctx.getChild(0).getText());//숫자로 변환이 잘되면 넘어가고
-               }catch(NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
-                   String vname = ctx.getChild(0).getText();
-                   if(!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
-                       if (setAddressListener != null)
-                           setAddressListener.setException();
-                       System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
-                       errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+               if(ctx.getChild(2).getChildCount() == 1 && ctx.getChild(0).getChildCount() == 1){
+                   try{
+                       Integer.parseInt(ctx.getChild(0).getText());//숫자로 변환이 잘되면 넘어가고
+                   }catch(NumberFormatException e) {//숫자가 아니면 선언된 변수인지 검사하기
+                       String vname = ctx.getChild(0).getText();
+                       if(!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
+                           if (setAddressListener != null)
+                               setAddressListener.setException();
+                           System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+                           errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                       }
                    }
-               }
 
-               try{
-                   Integer.parseInt(ctx.getChild(2).getText());
-               }catch(NumberFormatException e) {//숫자가 아니면 검사하기
-                   String vname = ctx.getChild(2).getText();
-                   if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
-                       if (setAddressListener != null)
-                           setAddressListener.setException();
-                       System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
-                       errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                   try{
+                       Integer.parseInt(ctx.getChild(2).getText());
+                   }catch(NumberFormatException e) {//숫자가 아니면 검사하기
+                       String vname = ctx.getChild(2).getText();
+                       if (!(symbolTable.hasGlobalName(vname) || symbolTable.hasLocalName(vname))){
+                           if (setAddressListener != null)
+                               setAddressListener.setException();
+                           System.out.println(vname + " : 정의되지 않은 변수가 호출되었습니다.");
+                           errorDump.append(vname + " : 정의되지 않은 변수가 호출되었습니다\n");
+                       }
                    }
                }
            }

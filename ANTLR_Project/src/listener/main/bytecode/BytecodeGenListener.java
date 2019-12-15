@@ -46,12 +46,12 @@ public class BytecodeGenListener extends MiniCBaseListener implements ParseTreeL
             programStr = programStr.replace("istore " + i + "\n", "istore_" + i + "\n");
         }
 
-        // 변수 id <= 3에 해당하는 명령문 '_' 처리
+        // 변수 id <= 5에 해당하는 명령문 '_' 처리
         for (int i = 0; i < 6; i++) {
             programStr = programStr.replace("ldc " + i + "\n", "iconst_" + i + "\n");
         }
 
-        System.out.println(programStr);
+        // System.out.println(programStr);
         if (setAddressListener != null)
             setAddressListener.outputData = programStr;
     }

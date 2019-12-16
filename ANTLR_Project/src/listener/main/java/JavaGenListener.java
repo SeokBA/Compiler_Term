@@ -88,11 +88,6 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
                 setAddressListener.setException();
             System.out.println(varName + " : 이미 정의된 변수입니다.");
             errorDump.append(varName + " : 이미 정의된 변수입니다.\n");
-        } else if (symbolTable.hasFunName(varName)) {//함수이름인데 착각했을 때
-            if (setAddressListener != null)
-                setAddressListener.setException();
-            System.out.println(varName + " : 다른 형식의 선언에 사용된 이름입니다.");
-            errorDump.append(varName + " : 다른 형식의 선언에 사용된 이름입니다.\n");
         }
         newTexts.put(ctx, ctx.getText());
     }
@@ -261,11 +256,6 @@ public class JavaGenListener extends MiniCBaseListener implements ParseTreeListe
                 setAddressListener.setException();
             System.out.println(varName + " : 이미 정의된 변수입니다.");
             errorDump.append(varName + " : 이미 정의된 변수입니다.\n");
-        } else if (symbolTable.hasFunName(varName)) {
-            if (setAddressListener != null)
-                setAddressListener.setException();
-            System.out.println(varName + " : 다른 형식의 선언에 사용된 이름입니다.");
-            errorDump.append(varName + " : 다른 형식의 선언에 사용된 이름입니다.\n");
         }
 
     }
